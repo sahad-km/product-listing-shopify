@@ -11,6 +11,8 @@ import {
   Tabs,
   Thumbnail,
   Button,
+  Divider,
+  Sheet,
 } from "@shopify/polaris";
 import { useState, useCallback, useEffect, useRef } from "react";
 import Navbar from "@/components/navbar/navbar";
@@ -38,7 +40,6 @@ export default function IndexTableWithFilteringExample() {
   const handleFiltersQueryChange = useCallback(
     (value) => {
       setQueryValue(value);
-      console.log(value);
       const newFilter = products.filter((product) => {
         return product.title.toLowerCase().includes(value.toLowerCase());
       });
@@ -50,6 +51,7 @@ export default function IndexTableWithFilteringExample() {
     },
     [queryValue]
   );
+
 
   const handleAvailabilityRemove = useCallback(() => setAvailability(null), []);
   const handleProductTypeRemove = useCallback(() => setProductType(null), []);
@@ -71,7 +73,7 @@ export default function IndexTableWithFilteringExample() {
     fetch("https://fakestoreapi.com/products")
       .then((response) => response.json())
       .then((data) => {
-        setProducts(data), console.log(apiData);
+        setProducts(data);
       })
       .catch((error) => console.error(error));
   }, []);
@@ -216,13 +218,40 @@ export default function IndexTableWithFilteringExample() {
     });
   }
 
-  //tabs
-  const [selected, setSelected] = useState(0);
+  // Tabs selection based product list
 
+  const [selected, setSelected] = useState(0);
+ 
   const handleTabChange = useCallback(
-    (selectedTabIndex) => setSelected(selectedTabIndex),
-    []
+    (selectedTabIndex) => {
+      setSelected(selectedTabIndex);
+      let newFilter;
+      if(selectedTabIndex == 0){
+        setFilteredData([])
+      }
+      if(selectedTabIndex == 1){
+        newFilter = products.filter((product) => {
+          return product.rating.count > 100 && product.rating.count < 200 ;
+        });
+        setFilteredData(newFilter)
+      }
+      if(selectedTabIndex == 2){
+        newFilter = products.filter((product) => {
+          return product.rating.count < 100 ;
+        });
+        setFilteredData(newFilter)
+      }
+      if(selectedTabIndex == 3){
+        newFilter = products.filter((product) => {
+          return product.rating.count > 200;
+        });
+        setFilteredData(newFilter)
+      }
+    },
+    [selected]
   );
+
+
   const tabs = [
     {
       id: "all-customers-4",
@@ -247,7 +276,7 @@ export default function IndexTableWithFilteringExample() {
     },
   ];
 
-  //modal of products
+  //Selected product modal 
 
   const [active, setActive] = useState(false);
   const button = useRef();
@@ -272,42 +301,23 @@ export default function IndexTableWithFilteringExample() {
     />
   );
 
-  const customers = [
-    {
-      id: "3411",
-      url: "#",
-      name: "Mae Jemison",
-      location: "Decatur, USA",
-      orders: 20,
-      amountSpent: "$2,400",
-    },
-    {
-      id: "2561",
-      url: "#",
-      name: "Ellen Ochoa",
-      location: "Los Angeles, USA",
-      orders: 30,
-      amountSpent: "$140",
-    },
-  ];
-
   const resourceName = {
     singular: "product",
     plural: "products",
   };
   
-    const rowMarkup = (filteredData.length === 0 && !queryValue ? products : filteredData).map(
+    const rowMarkup = (filteredData.length === 0 && !queryValue && selected == 0 ? products : filteredData).map(
       (product,index) => (
-        <IndexTable.Row  id={product.id} key={index} onClick={() => console.log(`Clicked on product ${product.id}`)} >
+        <IndexTable.Row  id={product.id} key={index}>
           <IndexTable.Cell>
             <Thumbnail source={product.image} size="small" />
           </IndexTable.Cell>
           <IndexTable.Cell>
-            <p className="truncate">{product.title}</p>
+            <p onClick={()=>{handleProductClick(product)}} className="truncate">{product.title}</p>
           </IndexTable.Cell>
           <IndexTable.Cell>
             <Badge status="success">
-              <p style={{ fontSize: "1.2em" }}>Active</p>
+              <p style={{ fontSize: "1.2em" }}>{product.rating.count > 200 ? 'Archived' : product.rating.count > 100 ? 'Active' : 'Draft'}</p>
             </Badge>
           </IndexTable.Cell>
           <IndexTable.Cell>
@@ -341,11 +351,7 @@ export default function IndexTableWithFilteringExample() {
             onSelect={handleTabChange}
             disclosureText="More views"
           >
-            <LegacyCard.Section title={tabs[selected].content}>
-              <p>Tab {selected} selected</p>
-            </LegacyCard.Section>
           </Tabs>
-
           <Filters
             queryPlaceholder="Filter Items"
             queryValue={queryValue}
@@ -356,6 +362,7 @@ export default function IndexTableWithFilteringExample() {
             onClearAll={handleFiltersClearAll}
           />
           <IndexTable
+          emptyState={emptyStateMarkup}
             resourceName={resourceName}
             itemCount={filteredData.length === 0 && !queryValue ? products.length : filteredData.length}
             headings={[
@@ -421,7 +428,7 @@ export default function IndexTableWithFilteringExample() {
                 ),
               },
             ]}
-            // stickyHeader
+            stickyHeader
             selectable={false}
           >
             {rowMarkup}
@@ -431,41 +438,46 @@ export default function IndexTableWithFilteringExample() {
 
       {/* Modal */}
 
-      <div style={{ height: "500px" }}>
+      { selectedProduct && 
+       <div style={{ height: "500px" }}>
         <Modal
-          instant
+          // instant
           open={active}
           onClose={handleClose}
-          title="Reach more shoppers with Instagram product tags"
-          primaryAction={{
-            content: "Add Instagram",
-            onAction: handleClose,
-          }}
-          secondaryActions={[
-            {
-              content: "Learn more",
-              onAction: handleClose,
-            },
-          ]}
+          title={selectedProduct.title}
         >
           <Modal.Section>
             <TextContainer>
-              <p>
-                Use Instagram posts to share your products with millions of
-                people. Let shoppers buy from your store without leaving
-                Instagram.
+            <img className="w-[30%] mx-auto h-30" src={selectedProduct.image} />
+            <Divider borderStyle="dark"/>
+            <h1 className="font-semibold text-lg px-5 ">A Description:</h1>
+              <p className="px-5">
+                {selectedProduct.description}
+              </p>
+              <Divider borderStyle="dark"/>
+              <h1 className="font-semibold text-lg px-5 ">Rating:</h1>
+              <p className="px-5">
+                <span className="font-semibold">Rating:</span> {selectedProduct.rating.rate}
+              </p>
+              <p className="px-5">
+              <span className="font-semibold">Rated By:</span> {selectedProduct.rating.count} customers
               </p>
             </TextContainer>
           </Modal.Section>
         </Modal>
       </div>
+      }
     </>
   );
 
   function disambiguateLabel(key, value) {
     switch (key) {
-      case "taggedWith":
-        return `Tagged with ${value}`;
+      case "availability":
+        return `Available on ${value}`;
+      case "vendor":
+        return `Available from ${value}`;
+      case "productType":
+        return `${value}`;
       default:
         return value;
     }

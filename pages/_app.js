@@ -1,6 +1,5 @@
 import '@/styles/globals.css'
 import { AppProvider } from '@shopify/polaris';
-// import '@shopify/polaris/dist/styles.css';
 import '@shopify/polaris/build/esm/styles.css'
 
 export default function App({ Component, pageProps }) {

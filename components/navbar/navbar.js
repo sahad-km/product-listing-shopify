@@ -1,4 +1,4 @@
-import { Button, Popover, ActionList } from "@shopify/polaris";
+import { Button, Popover} from "@shopify/polaris";
 
 import React, { useState, useCallback } from "react";
 
@@ -6,17 +6,6 @@ function Navbar() {
   const [active, setActive] = useState(false);
 
   const toggleActive = useCallback(() => setActive((active) => !active), []);
-
-  const handleImportedAction = useCallback(
-    () => console.log("Imported action"),
-    []
-  );
-
-  const handleExportedAction = useCallback(
-    () => console.log("Exported action"),
-    []
-  );
-
   const activator = (
     <Button onClick={toggleActive} disclosure>
       More actions
