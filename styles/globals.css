@@ -25,3 +25,6 @@ thead {
   min-height: 3px;
   max-height: 3px;
 }
+.export{
+  display: none;
+}

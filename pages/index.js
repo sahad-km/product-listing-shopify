@@ -12,14 +12,11 @@ import {
   Thumbnail,
   Button,
   Divider,
-  Sheet,
 } from "@shopify/polaris";
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect } from "react";
 import Navbar from "@/components/navbar/navbar";
 
 export default function IndexTableWithFilteringExample() {
-  //data table
-  const [apiData,setApiData] = useState([]);
   const [products, setProducts] = useState([]);
   const [availability, setAvailability] = useState(null);
   const [productType, setProductType] = useState(null);
@@ -37,6 +34,8 @@ export default function IndexTableWithFilteringExample() {
   );
   const handleVendorChange = useCallback((value) => setVendor(value), []);
 
+  //Product filter handling
+
   const handleFiltersQueryChange = useCallback(
     (value) => {
       setQueryValue(value);
@@ -51,7 +50,6 @@ export default function IndexTableWithFilteringExample() {
     },
     [queryValue]
   );
-
 
   const handleAvailabilityRemove = useCallback(() => setAvailability(null), []);
   const handleProductTypeRemove = useCallback(() => setProductType(null), []);
@@ -69,6 +67,7 @@ export default function IndexTableWithFilteringExample() {
     handleVendorRemove,
   ]);
 
+  //Fetching product data from API
   useEffect(() => {
     fetch("https://fakestoreapi.com/products")
       .then((response) => response.json())
@@ -77,6 +76,8 @@ export default function IndexTableWithFilteringExample() {
       })
       .catch((error) => console.error(error));
   }, []);
+
+  //Availability filter clear
 
   const clearAvailabilty = useCallback(
     () => (
@@ -92,6 +93,8 @@ export default function IndexTableWithFilteringExample() {
     []
   );
 
+  //Product type filter clear
+
   const clearProductType = useCallback(
     () => (
       <Button
@@ -106,6 +109,8 @@ export default function IndexTableWithFilteringExample() {
     []
   );
 
+  //Vendor filter clear
+
   const clearVendor = useCallback(
     () => (
       <Button
@@ -119,6 +124,8 @@ export default function IndexTableWithFilteringExample() {
     ),
     []
   );
+
+  //Defining all filters
 
   const filters = [
     {
@@ -192,6 +199,8 @@ export default function IndexTableWithFilteringExample() {
     },
   ];
 
+  //To show applied filter as label
+
   const appliedFilters = [];
   if (!isEmpty(availability)) {
     const key = "availability";
@@ -221,36 +230,37 @@ export default function IndexTableWithFilteringExample() {
   // Tabs selection based product list
 
   const [selected, setSelected] = useState(0);
- 
+
   const handleTabChange = useCallback(
     (selectedTabIndex) => {
       setSelected(selectedTabIndex);
       let newFilter;
-      if(selectedTabIndex == 0){
-        setFilteredData([])
+      if (selectedTabIndex == 0) {
+        setFilteredData([]);
       }
-      if(selectedTabIndex == 1){
+      if (selectedTabIndex == 1) {
         newFilter = products.filter((product) => {
-          return product.rating.count > 100 && product.rating.count < 200 ;
+          return product.rating.count > 100 && product.rating.count < 200;
         });
-        setFilteredData(newFilter)
+        setFilteredData(newFilter);
       }
-      if(selectedTabIndex == 2){
+      if (selectedTabIndex == 2) {
         newFilter = products.filter((product) => {
-          return product.rating.count < 100 ;
+          return product.rating.count < 100;
         });
-        setFilteredData(newFilter)
+        setFilteredData(newFilter);
       }
-      if(selectedTabIndex == 3){
+      if (selectedTabIndex == 3) {
         newFilter = products.filter((product) => {
           return product.rating.count > 200;
         });
-        setFilteredData(newFilter)
+        setFilteredData(newFilter);
       }
     },
     [selected]
   );
 
+  //Defining all tabs
 
   const tabs = [
     {
@@ -276,10 +286,9 @@ export default function IndexTableWithFilteringExample() {
     },
   ];
 
-  //Selected product modal 
+  //Selected product modal
 
   const [active, setActive] = useState(false);
-  const button = useRef();
   const [selectedProduct, setSelectedProduct] = useState(null);
 
   const handleProductClick = (product) => {
@@ -291,12 +300,12 @@ export default function IndexTableWithFilteringExample() {
     setActive(false);
   }, []);
 
-  //index table
+  //Index table
 
   const emptyStateMarkup = (
     <EmptySearchResult
-      title={'No products yet'}
-      description={'Try changing the filters or search term'}
+      title={"No products yet"}
+      description={"Try changing the filters or search term"}
       withIllustration
     />
   );
@@ -305,44 +314,58 @@ export default function IndexTableWithFilteringExample() {
     singular: "product",
     plural: "products",
   };
-  
-    const rowMarkup = (filteredData.length === 0 && !queryValue && selected == 0 ? products : filteredData).map(
-      (product,index) => (
-        <IndexTable.Row  id={product.id} key={index}>
-          <IndexTable.Cell>
-            <Thumbnail source={product.image} size="small" />
-          </IndexTable.Cell>
-          <IndexTable.Cell>
-            <p onClick={()=>{handleProductClick(product)}} className="truncate">{product.title}</p>
-          </IndexTable.Cell>
-          <IndexTable.Cell>
-            <Badge status="success">
-              <p style={{ fontSize: "1.2em" }}>{product.rating.count > 200 ? 'Archived' : product.rating.count > 100 ? 'Active' : 'Draft'}</p>
-            </Badge>
-          </IndexTable.Cell>
-          <IndexTable.Cell>
-            <Text as="span" alignment="start">
-              1814
-            </Text>
-          </IndexTable.Cell>
-          <IndexTable.Cell>
-            <Text as="span" alignment="start">
-              Outdoor
-            </Text>
-          </IndexTable.Cell>
-          <IndexTable.Cell>
-            <Text as="span" alignment="start">
-              Rustic LTD
-            </Text>
-          </IndexTable.Cell>
-        </IndexTable.Row>
-      )
-    );
-  
+
+  const rowMarkup = (
+    filteredData.length === 0 && !queryValue && selected == 0
+      ? products
+      : filteredData
+  ).map((product, index) => (
+    <IndexTable.Row id={product.id} key={index}>
+      <IndexTable.Cell>
+        <Thumbnail source={product.image} size="small" />
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <p
+          onClick={() => {
+            handleProductClick(product);
+          }}
+          className="truncate"
+        >
+          {product.title}
+        </p>
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <Badge status="success">
+          <p style={{ fontSize: "1.2em" }}>
+            {product.rating.count > 200
+              ? "Archived"
+              : product.rating.count > 100
+              ? "Active"
+              : "Draft"}
+          </p>
+        </Badge>
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <Text as="span" alignment="start">
+          1814
+        </Text>
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <Text as="span" alignment="start">
+          Outdoor
+        </Text>
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <Text as="span" alignment="start">
+          Rustic LTD
+        </Text>
+      </IndexTable.Cell>
+    </IndexTable.Row>
+  ));
 
   return (
     <>
-      <Navbar />
+      <Navbar prodctData={products} setProductData={setProducts} />
       <div className="w-[80%] mx-auto">
         <LegacyCard>
           <Tabs
@@ -350,8 +373,7 @@ export default function IndexTableWithFilteringExample() {
             selected={selected}
             onSelect={handleTabChange}
             disclosureText="More views"
-          >
-          </Tabs>
+          ></Tabs>
           <Filters
             queryPlaceholder="Filter Items"
             queryValue={queryValue}
@@ -362,11 +384,15 @@ export default function IndexTableWithFilteringExample() {
             onClearAll={handleFiltersClearAll}
           />
           <IndexTable
-          emptyState={emptyStateMarkup}
+            emptyState={emptyStateMarkup}
             resourceName={resourceName}
-            itemCount={filteredData.length === 0 && !queryValue ? products.length : filteredData.length}
+            itemCount={
+              filteredData.length === 0 && !queryValue
+                ? products.length
+                : filteredData.length
+            }
             headings={[
-              { title: ''},
+              { title: "" },
               {
                 title: (
                   <Text
@@ -438,35 +464,38 @@ export default function IndexTableWithFilteringExample() {
 
       {/* Modal */}
 
-      { selectedProduct && 
-       <div style={{ height: "500px" }}>
-        <Modal
-          // instant
-          open={active}
-          onClose={handleClose}
-          title={selectedProduct.title}
-        >
-          <Modal.Section>
-            <TextContainer>
-            <img className="w-[30%] mx-auto h-30" src={selectedProduct.image} />
-            <Divider borderStyle="dark"/>
-            <h1 className="font-semibold text-lg px-5 ">A Description:</h1>
-              <p className="px-5">
-                {selectedProduct.description}
-              </p>
-              <Divider borderStyle="dark"/>
-              <h1 className="font-semibold text-lg px-5 ">Rating:</h1>
-              <p className="px-5">
-                <span className="font-semibold">Rating:</span> {selectedProduct.rating.rate}
-              </p>
-              <p className="px-5">
-              <span className="font-semibold">Rated By:</span> {selectedProduct.rating.count} customers
-              </p>
-            </TextContainer>
-          </Modal.Section>
-        </Modal>
-      </div>
-      }
+      {selectedProduct && (
+        <div style={{ height: "500px" }}>
+          <Modal
+            // instant
+            open={active}
+            onClose={handleClose}
+            title={selectedProduct.title}
+          >
+            <Modal.Section>
+              <TextContainer>
+                <img
+                  className="w-[30%] mx-auto h-30"
+                  src={selectedProduct.image}
+                />
+                <Divider borderStyle="dark" />
+                <h1 className="font-semibold text-lg px-5 ">A Description:</h1>
+                <p className="px-5">{selectedProduct.description}</p>
+                <Divider borderStyle="dark" />
+                <h1 className="font-semibold text-lg px-5 ">Rating:</h1>
+                <p className="px-5">
+                  <span className="font-semibold">Rating:</span>{" "}
+                  {selectedProduct.rating.rate}
+                </p>
+                <p className="px-5">
+                  <span className="font-semibold">Rated By:</span>{" "}
+                  {selectedProduct.rating.count} customers
+                </p>
+              </TextContainer>
+            </Modal.Section>
+          </Modal>
+        </div>
+      )}
     </>
   );
 
